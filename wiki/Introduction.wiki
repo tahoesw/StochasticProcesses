@@ -1,0 +1,68 @@
+#summary A general introduction to StochasticProcess.py and its class hierarchies.
+= Introduction =
+
+*stochastic-processes* is a project dedicated to exactly simulating stochastic processes in Python. The module *StochasticProcesses* contains classes of both jump and continuous processes, including:
+
+== [StepProcesses Step Processes] ==
+
+  * Renewal Process
+  * Poisson process,
+  * Marked Poisson process,
+  * Compound Poisson process,
+
+== [DiffusionProcesses Diffusion Processes] ==
+  * Wiener Process (with drift),
+  * Squared Bessel process,
+  * Periodic drifted Brownian motion,
+  * Ornstein-Uhlenbeck process,
+  * Time-integrated Ornstein-Uhlenbeck process,
+  * CIR process,
+  * CEV process,
+  * Geometric Brownian Motion
+  * Custom diffusion
+
+== [JumpDiffusionProcesses Jump Diffusion Processes] ==
+  * Gamma process,
+  * Variance Gamma process,
+  * Exponential Gamma process
+
+
+The process can be conditioned on the initial and final conditions. Each class contains methods to exactly generate the process at times, position at times,  get expected values of functional of the process, etc (see wiki and code documentation for all methods).
+
+See the examples.py module for examples and some documentation.
+
+*Dependencies*: [http://www.scipy.org/ SciPy]
+
+
+
+
+=== Class hierarchy and overriding === 
+====General classes====
+There exists general classes Step_processes, Diffusion_processes, and Jump_Diffusion_processes. Include in these classes are methods like:
+{{{
+def generate_sample_path(times):
+  return _generate_sample_path(times)
+
+def get_mean_at(t):
+   return _get_mean_at(t)
+
+def _generate_sample_path(times):
+  #some code1
+
+def _get_mean_at(t):
+  #some code2
+}}}
+code1 and code2 are code to generate the desired value numerically. These involve Monte Carlo Methods, Euler schemes etc. 
+====Stochastic Processes classes====
+All processes we use are subclasses of the one of the three general classes mentioned above. Methods in these classes override some of the methods in the superclasses.
+{{{
+def _get_mean_at(t):
+  #some code that computes the mean exactly i.e. not approximated
+
+def _generate_sample_path(times)
+  #some code
+}}}
+So when one invokes the method {{{generate_sample_path}}}, Python will find it in the general class, it calls {{{_generate_sample_path}}} and if the process subclass has a {{{_generate_sample_path}}} method defined, it will be called first, else it will call the general class's {{{_generate_sample_path}}} (and use a approximation scheme). 
+
+This is how the module works *most* of the time. Some classes, like periodic_drift_process, has very few methods due to its intractability.   
+  

@@ -1,0 +1,90 @@
+#summary Documentation and examples for step processes
+=Step Processes=
+
+Step processes are defined as processes with finite activity in a finite interval. This includes compound Poisson processes, renewal processes etc. Generally, they are constructed by:
+
+{{{ 
+SomeStepProcess( parameters, time_space_constraints)
+ }}}
+
+'parameters' is a dictionary specific to the process, see the specific process below for keys in the dictionary.
+
+All processes, expect a marked Poisson process, can be conditioned on the start time and start position. Only some can be conditioned on the end time and end position. This can be accomplished by inputing into the second argument the dictionary:
+{{{
+time_space_constraints={"startTime":scalar, "startPosition":scalar, "endPosition":scalar, "endTime":scalar}
+}}}
+*Note* that startTime and startPosition are required, but the latter two are not. 
+
+
+
+==Renewal Process==
+    parameters:{{{   {T:see below, J:see below}}}}
+    
+    T is a scipy "frozen" random variable object, from the scipy.stats library, that has the same distribution as the inter-arrival times i.e. t(i+1) - t(i) is equal in distribution to T, where t(i) are jump/event times.
+
+    T must be a non-negative random variable, possibly constant. The constant case in included in this library, see the Constant class in the auxillary functions and class at the bottom of the module.
+    
+    J is a scipy "frozen" random variable object that has the same distribution as the jump distribution. It can have any real support. Ex: for the poisson process, J is equal to 1 with probability 1, but for the compound poisson process J is distributed as a non-constant.
+    
+    Ex:
+{{{
+    import scipy.stats as stats
+    
+    #create a standard poisson process
+    
+    parameters = {"J":Constant(1), "T"=stats.Poisson(lambda)}}
+    RnPs= Renewal_process(parameters)
+}}}
+
+    ===Methods===
+  * forward_recurrance_time_pdf(t)
+  * backward_recurrance_time_pdf(t)
+  * spread_pdf(t)
+  * get_mean_at(t)
+  * generate_position_at(t)
+  * generate_sample_jumps(T)
+  * generate_sample_path(times)
+
+
+==Poisson Process==
+    This class creates the Poisson process defined by N(t) being distributed according to a poisson distribution. 
+    parameters: {{{  {rate: scalar>0} }}}
+
+    ===Methods===
+  * get_mean_at(t)
+  * get_variance_at(t)
+  * generate_sample_jumps(T)
+  * generate_sample_path(times)
+  * generate_position_at(t)
+
+==Marked Poisson Process==
+   This class constructs marked poisson process i.e. at exponentially distributed times, a uniform RV is generated.
+    
+    parameters:{{{ {rate:scalar>0, U:scalar, upperbound , L:scalar, <U, lowerbound, startTime:scalar} }}}
+    
+*Note* the bounds refer to the uniform distribution 
+*Note* there are no other time-space constraints
+
+    ===Methods===
+  * generate_marked_process(T)
+
+==Compound Poisson Process==
+    parameters: {{{ {"J":see below, "rate":scalar>0} }}}
+J is a frozen scipy.stats random variable obj. It can have real support.
+     Ex:
+{{{
+     import stats.scipy as stats
+     
+     Nor = stats.normal(0,1)
+     cmp = Compound_poisson_process({"J":Nor}) 
+ }}}
+
+    ===Methods===
+  * get_mean_at(t)
+  * get_variance_at(t)
+  * generate_sample_jumps(T)
+  * generate_sample_paths(times)
+  * generate_position_at(t)
+
+
+    

@@ -1,0 +1,86 @@
+#summary documentation and examples for the jump diffusion processes
+=Jump Diffusion Processes=
+
+Jump diffusions are process that have infinite activity but are not continuous. Examples include the gamma process and variance gamma process.  They are constructed by:
+
+{{{ SomeDiffusionProcess( parameters, time_space_constraints) }}}
+
+
+'parameters' is a dictionary specific to the process, see the process below for keys in the dictionary.
+
+All processes can be conditioned on the start time, start position, end time and end position [see the specific process]. This can be accomplished by inputing into the second argument the dictionary:
+{{{
+time_space_constraints={"startTime":scalar, "startPosition":scalar, "endPosition":scalar, "endTime":scalar>startTime}
+}}}
+
+*Note* that startTime and startPosition are required, but the latter two are not. 
+
+==Gamma Process==
+Defined by G(t+h) - G(t) is distributed as a Gamma random variable. 
+{{{
+parameters={"mean":scalar>0, "variance":scalar>0}
+    or
+parameters={"rate":scalar>0, "size":scalar>0}
+}}}
+    
+Under the first parameterization: E[G(t)] = mean*t, Var(G(t)) = variance*t.
+Under the second parameterization: G(t+1) - G(t) ~ Gamma(rate, size)
+where Gamma has pdf [size^(-rate)/gamma(rate)]*x^(rate-1)*exp(-x/size). See http://eprints.soton.ac.uk/55793/1/wsc03vg.pdf for details on this process.
+
+  ===Methods===
+  * get_mean_at(t) #t is a scalar
+  * get_variance_at(t)
+  * generate_position_at(t)
+  * generate_sample_path(times) #times is an array of increasing times
+  * transition_pdf(y,t,x)
+  * expected_value(f,t,N) 
+{{{expected_value(f,t,N)}}} is a method that use MC methods to compute E[f(G_t)] using N samples. 
+
+==Variance Gamma Process==
+ The Gamma variance process is a brownian motion subordinator:
+VG_t = mu*G_t(t,a,b) + sigma*B_{G_t(t,a,b)}
+i.e. VG process is a time transformed brownian motion plus a scalar drift term.
+It can also be represented by the difference of two gamma processes. 
+    
+*Note*: currently, if conditional, endPosition=0. Further extensions will be to make this nonzero.  
+{{{ 
+parameters = {mu:scalar, sigma:scalar>0, variance:scalar>0} 
+    or
+    {mu:scalar, sigma:scalar>0, rate:scalar>0}
+}}}    
+*Note*: the mean of the gamma process is 1, hence the reduction of parameters needed.
+    
+The parameterization depends on the way you parameterize the underlying gamma process. See documentation above.
+See http://www.math.nyu.edu/research/carrp/papers/pdf/VGEFRpub.pdf"
+
+  ===Methods===
+  * get_mean_at(t) #t is a scalar
+  * get_variance_at(t)
+  * generate_position_at(t)
+  * generate_sample_path(times) #times is an array of increasing times
+  * expected_value(f,t,N) 
+{{{expected_value(f,t,N)}}} is a method that use MC methods to compute E[f(G_t)] using N samples. This class cannot perform MC expected value on conditional processes...yet.
+
+== Geometric Gamma process ==
+The processes is defined by GG_t = GG_0exp{G_t} where G_t is a gamma processes (see above)
+{{{
+parameters = {mu: scalar, sigma: scalar>0 } 
+}}}
+The parameters refer to the parameters in the gamma process (mu = mean, sigma = variance) (see gamma process documentation for more details).
+
+  ===Methods===
+  * get_mean_at(t) t is a scalar
+  * generate_position_at(t)
+  * generate_sample_path(times)
+  * transition_pdf(y,t,x)
+  * expected_value(f,t,N)
+  * get_variance_at(t)
+
+{{{expected_value(f,t,N)}}} is a method that use MC methods to compute E[f(G_t)] using N samples.
+
+    
+
+
+
+
+ 
