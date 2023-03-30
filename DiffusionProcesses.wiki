@@ -1,0 +1,163 @@
+#summary documentation and examples of diffusion processes' classes
+=Diffusion Processes=
+
+Diffusion proccess are characterized by their drift and diffusion term in the stochastic differential equation. They are the only continuous stochastic process. Some diffusion processes are wiener process, CIR process, etc. Generally they are constructed by:
+
+{{{ SomeDiffusionProcess( parameters, time_space_constraints) }}}
+
+
+'parameters' is a dictionary specific to the process, see the process below for keys in the dictionary.
+
+All processes, expect a periodic drift process, can be conditioned on the start time and start position. Only some can be conditioned on the end time and end position [see the specific process]. This can be accomplished by inputing into the second argument the dictionary:
+{{{
+time_space_constraints={"startTime":scalar, "startPosition":scalar, "endPosition":scalar, "endTime":scalar}
+}}}
+
+*Note* that startTime and startPosition are required, but the latter two are not. 
+
+==Wiener Process==    
+dW_t = mu*dt + sigma*dB_t
+{{{    
+    Wiener_process(parameters, space_time_constraints)
+
+    parameters={mu: scalar, sigma: scalar>0}
+    }}}
+    ===Methods===
+  * transition_pdf(x,t,y)
+  * get_mean_at(t)
+  * get_variance_at(t)
+  * generate_position_at(t)
+  * generate_sample_path(times) #path is a array of increasing times
+  * expected_value(f,t,N)
+
+==OU_process==
+The Orstein-Uhlenbeck process
+dOU_t = theta*(mu-OU_t)*dt + sigma*dB_t
+{{{
+OU_process(parameters, time_space_constraints)
+parameters = {theta:scalar, mu:scalar>0, sigma:scalar>0}
+}}}
+    ===Methods===
+  * get_mean_at(t) 
+  * get_variance_at(t)
+  * transition_pdf(x,t,y)
+  * generate_position_at(t)
+  * generate_sample_oath(times)#path is a array of increasing times
+  * expected_value(f,t,N)
+
+==Time Integrated OU process==
+The time-integrated Orstein-Uhlenbeck process
+IOU_t = IOU_0 + \int_0^t OU_s ds
+where dOU_t = theta*(mu-OU_t)*dt + sigma*dB_t, 
+OU_0 = x0
+   {{{
+Integrated_OU_process(parameters, time_space_constraints)
+parameters={theta:scalar, mu:scalar, sigma:scalar>0, x0:scalar}
+    }}}
+modified from http://www.fisica.uniud.it/~milotti/DidatticaTS/Segnali/Gillespie_1996.pdf
+
+   ===Methods===
+  * get_mean_at(t)
+  * get_variance_at(t)
+  * transition_pdf(x,t,y)
+  * generate_position_at(t)
+  * generate_sample_path(times) #times is an array of increasing times
+  * expected_value(f,t,N)
+
+== Squared Bessel Process ==
+dX_t = lambda_0*dt + nu*sqrt(X_t)dW_t
+{{{ 
+SqBessel_process(parameters, space_time_constraints
+parameters = {lambda0:scalar, nu:scalar>0} 
+}}}
+or
+{{{ 
+parameters = {mu:scalar} 
+}}}
+See the in-code documentation for description of mu.
+
+  ===Methods===
+  * generate_sample_path(times, absb) #absb is a boolean; true if 0 is an absorbing state, false else.
+  * transition_pdf(x,t,y)
+  * generate_sample_FHT_bridge(times) #samples the FHT at 0, and constructs a bridge to it.
+  * get_mean_at(t)
+  * get_variance_at(t)
+  * expected_value(f,t,N)
+  * generate_position_at(t)
+
+==CIR Process==
+dCIR_t = (lambda_0 - lambda_1*CIR_t)dt + nu*sqrt(CIR_t)*dW_t
+
+{{{ 
+parameters = {lambda_0:scalar, lambda_1:scalar, nu:scalar>0}
+CIR_process(parameters, time_space_constraints} 
+}}}
+
+  ===Methods===
+  * transition_pdf(x,t,y)
+  * generate_sample_path(times,abs) # abs is a boolean; true if absorption at state 0, false else.
+  * get_mean_at(t)
+  * get_variance_at(t)
+  * expected_value(f,t,N)
+  * generate_position_at(t)
+
+==CEV Process==
+dCEV_t = r*dt + delta*(CEV)^{beta+1}*dW_t
+{{{
+parameters = { r:scalar, delta: scalar>0, beta:scalar<0}
+CEV_process( parameters, time_space_constraints)
+}}}
+ ===Methods===
+  * transition_pdf(x,t,y)
+  * generate_sample_path(times,abs) # abs is a boolean; true if absorption at state 0, false else.
+  * get_mean_at(t)
+  * get_variance_at(t)
+  * expected_value(f,t,N)
+  * generate_position_at(t)
+
+==Periodic Drift Process==
+dX_t = psi*sin(X_t + theta)dt + dBt 
+{{{
+parameters =  {psi:scalar>0, theta:scalar>0}
+Periodic_drift_process(parameters)
+}}}
+*Note* this process does not accept any time or space constraints. The process starts at 0 at time 0.
+
+  ===Methods===
+  *generate_sample_path(T) #returns a path of random times before time T
+
+==Geometric Brownian Motion process==
+dGBM_t = muGBM_tdt + sigmaGBM_tdW_t
+{{{
+parameters =  {mu:scalar, sigma:scalar>0}
+GBM_process(parameters, time_space_constraints)
+}}}
+  ===Methods==
+  * get_mean_at(t)
+  * get_variance_at(t)
+  * generate_position_at(t)
+  * generate_sample_path(times)
+  * expected_value(f,t,N)
+  * transition_pdf(x,t,y)
+
+==Custom Diffusion==
+dC_t = a(C_t, t)dt + b(C_t,t)dW_t
+{{{
+def a(x,t):
+   return [your own scalar returning function here, eg: x**2, t+x]
+def b(x,t):
+   return [your own non-negative scalar returning function here, eg: x**2, t+x]
+parameters = {"a":a, "b":b}
+Custom_process( parameters, time_space_constraints )
+}}}
+*Note*: time_space_constraints can only contain {{{startTime}}} and {{{startPosition}}}
+
+   ===Methods==
+  * get_mean_at(t)
+  * get_variance_at(t)
+  * generate_position_at(t)
+  * generate_sample_path(times)
+  * expected_value(f,t,N)
+
+*Note*: all the above methods rely on MC schemes. You can change the accuracy by changing the library.
+
